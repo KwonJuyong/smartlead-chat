@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+
+# Node
+frontend/node_modules/
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Uploads(로컬 시연용이라 리포에는 비우기)
+uploads/*
+!uploads/.gitkeep
