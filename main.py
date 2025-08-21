@@ -14,30 +14,25 @@ app = FastAPI(title="SmartLead Chat")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # ---------- DB ----------
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+from sqlalchemy.engine.url import make_url
 
-# 드라이버 스킴 보정(일부 플랫폼이 postgres:// 를 줄 수 있어 대비)
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
-elif DATABASE_URL.startswith("postgresql://") and "+psycopg2" not in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+raw_url = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+if raw_url.startswith("postgres://"):
+    raw_url = raw_url.replace("postgres://", "postgresql://", 1)
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=connect_args)
+url = make_url(raw_url)
+if url.drivername == "postgresql":
+    url = url.set(drivername="postgresql+psycopg2")
+
+host = (url.host or "")
+if host and not host.endswith(".railway.internal"):
+    q = dict(url.query); q.setdefault("sslmode", "require")
+    url = url.set(query=q)
+
+connect_args = {"check_same_thread": False} if url.drivername.startswith("sqlite") else {}
+engine = create_engine(url, pool_pre_ping=True, pool_recycle=300, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-
-class Message(Base):
-    __tablename__ = "messages"
-    id = Column(Integer, primary_key=True)
-    room_id = Column(String(128), index=True, nullable=False)
-    name = Column(String(255), nullable=False)
-    text = Column(Text, nullable=True)
-    attachment_url = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
-
-Base.metadata.create_all(bind=engine)
 
 # ---------- 업로드 ----------
 os.makedirs("uploads", exist_ok=True)
