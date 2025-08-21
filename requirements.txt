@@ -3,3 +3,4 @@ uvicorn[standard]
 sqlalchemy
 python-multipart
 python-jose[cryptography]
+psycopg2-binary
