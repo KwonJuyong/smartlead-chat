@@ -34,6 +34,20 @@ engine = create_engine(url, pool_pre_ping=True, pool_recycle=300, connect_args=c
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# ---------- 모델 ----------
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True)
+    room_id = Column(String(128), index=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    text = Column(Text, nullable=True)
+    attachment_url = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+# 앱 기동 시 테이블이 없으면 생성
+Base.metadata.create_all(bind=engine)
+
+
 # ---------- 업로드 ----------
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

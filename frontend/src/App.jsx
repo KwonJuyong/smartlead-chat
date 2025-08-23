@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-const API = "http://127.0.0.1:8000";
+// 로컬(vite:5173)과 배포(같은 도메인) 자동 전환
+const isLocalDev = location.port === "5173";
+const API = isLocalDev ? "http://127.0.0.1:8000" : ""; // 배포에선 같은 출처
+const WS_ORIGIN = isLocalDev
+  ? "ws://127.0.0.1:8000"
+  : (location.protocol === "https:" ? "wss://" : "ws://") + location.host;
+
 const toAbs = (u) => (u && !/^https?:\/\//i.test(u) ? `${API}${u}` : u);
 
 export default function App() {
@@ -35,7 +41,7 @@ export default function App() {
   const connect = async () => {
     if (!roomId || !name) return;
     await loadHistory(roomId);
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/${roomId}`);
+    const ws = new WebSocket(`${WS_ORIGIN}/ws/${roomId}`);
     ws.onopen = () => setConnected(true);
     ws.onmessage = (e) => {
       try {
