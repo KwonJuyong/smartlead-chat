@@ -47,6 +47,15 @@ class Message(Base):
 # 앱 기동 시 테이블이 없으면 생성
 Base.metadata.create_all(bind=engine)
 
+@app.on_event("startup")
+def _db_healthcheck():
+    try:
+        print("Using DB:", engine.url.render_as_string(hide_password=True))
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SELECT 1")
+        print("DB OK")
+    except Exception as e:
+        print("DB connect failed:", e)
 
 # ---------- 업로드 ----------
 os.makedirs("uploads", exist_ok=True)
