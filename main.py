@@ -156,14 +156,12 @@ async def ws_endpoint(ws: WebSocket, room_id: str):
         if not rooms[room_id]:
             del rooms[room_id]
 # ---------- 프론트 정적 서빙 ----------
-# 절대경로로 안전하게(frontend/dist를 FastAPI가 그대로 서빙)
 import pathlib
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 DIST_DIR = BASE_DIR / "frontend" / "dist"
 
 if DIST_DIR.exists():
-    # 이미 위에서 StaticFiles를 import 했으므로 재import 불필요
     app.mount("/", StaticFiles(directory=str(DIST_DIR), html=True), name="frontend")
 else:
     print(f"[WARN] frontend/dist not found at: {DIST_DIR}")
