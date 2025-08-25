@@ -155,7 +155,7 @@ async def ws_endpoint(ws: WebSocket, room_id: str):
         rooms[room_id].discard(ws)
         if not rooms[room_id]:
             del rooms[room_id]
-# ---------- (맨 마지막) 프론트 정적 서빙 ----------
+# ---------- 프론트 정적 서빙 ----------
 # 절대경로로 안전하게(frontend/dist를 FastAPI가 그대로 서빙)
 import pathlib
 
